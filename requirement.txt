@@ -9,7 +9,6 @@ dask
 multiprocess
 matplotlib
 seaborn
-nb_conda
 urllib3
 regex
 beautifulsoup4
@@ -21,3 +20,5 @@ pylint
 isort
 pre-commit
 conda-lock
+pytest
+sphinx
