@@ -1,49 +1,13 @@
 import pytest
-# ─────────────────────────────────────────────
-# Fonctions extraites du notebook
-# ─────────────────────────────────────────────
 
-def string_in_keys(d: dict, s: str):
-    if s not in d.keys():
-        return 123
-
-
-def make_fiz_buzz(L: list) -> list:
-    fizbee = []
-    for i in range(len(L)):
-        if L[i] % 5 == 0 and L[i] % 7 == 0:
-            fizbee.append("fizbuz")
-        elif L[i] % 5 == 0:
-            fizbee.append("fiz")
-        elif L[i] % 7 == 0:
-            fizbee.append("buz")
-        else:
-            fizbee.append(i)
-    return fizbee
-
-
-def describe_price(fruit: str, quantity: int, price: float) -> str:
-    fruit_name = fruit if quantity == 1 else f"{fruit}s"
-    verb = "costs" if quantity == 1 else "cost"
-    return f"{quantity} {fruit_name} {verb} ${price:.2f}"
-
-
-def is_unique(x: list) -> bool:
-    return len(x) == len(set(x))
-
-
-def triangle_shape(height: int) -> str:
-    if height == 0:
-        return ""
-    triangle = ""
-    for i in range(height):
-        stair = " " * (height - i - 1) + "x" * (2 * i + 1) + " " * (height - i - 1) + "\n"
-        triangle += stair
-    return triangle
-
-# ─────────────────────────────────────────────
-# Tests : fonctions
-# ─────────────────────────────────────────────
+from src.utils_fonctions import (
+    string_in_keys,
+    make_fiz_buzz,
+    describe_price,
+    is_unique,
+    triangle_shape,
+    usefulness,
+)
 
 class TestDescribePrice:
     def test_singular(self):
@@ -122,3 +86,73 @@ class TestTriangleShape:
             lines = triangle_shape(h).splitlines()
             lengths = [len(l) for l in lines]
             assert len(set(lengths)) == 1
+
+
+class TestStringInKeys:
+    def test_existing_key(self):
+        assert string_in_keys({"a": 1, "b": 2}, "a") is None
+
+    def test_missing_key(self):
+        assert string_in_keys({"a": 1, "b": 2}, "z") == 123
+
+    def test_empty_dictionary(self):
+        assert string_in_keys({}, "a") == 123
+
+    def test_single_key(self):
+        assert string_in_keys({"a": 1}, "a") is None
+
+    def test_key_with_none_value(self):
+        assert string_in_keys({"a": None}, "a") is None
+
+class TestMakeFizBuzz:
+    def test_empty_list(self): assert make_fiz_buzz([]) == []
+    def test_number_divisible_by_5_only(self): assert make_fiz_buzz([5]) == ["fiz"]
+    def test_number_divisible_by_7_only(self): assert make_fiz_buzz([7]) == ["buz"]
+    def test_number_divisible_by_5_and_7(self): assert make_fiz_buzz([35]) == ["fizbuz"]
+    def test_number_divisible_by_neither(self): assert make_fiz_buzz([1]) == [0]
+    def test_multiple_numbers(self): assert make_fiz_buzz([2, 5, 7, 35, 11]) == [ 0, "fiz", "buz", "fizbuz", 4, ]
+    def test_zero(self): assert make_fiz_buzz([0]) == ["fizbuz"]
+    def test_negative_numbers(self): assert make_fiz_buzz([-5, -7, -35, -1]) == [ "fiz", "buz", "fizbuz", 3, ]
+    def test_original_index_is_returned(self): assert make_fiz_buzz([1, 2, 3]) == [0, 1, 2]
+
+
+class TestUsefulness:
+    def test_maths(self, capsys):
+        result = usefulness("maths")
+
+        captured = capsys.readouterr()
+
+        assert result is None
+        assert captured.out == "That is very useful!\n"
+
+    def test_python(self, capsys):
+        result = usefulness("python")
+
+        captured = capsys.readouterr()
+
+        assert result is None
+        assert captured.out == "That is very useful!\n"
+
+    def test_meditation(self, capsys):
+        result = usefulness("meditation")
+
+        captured = capsys.readouterr()
+
+        assert result is None
+        assert captured.out == "How nice\n"
+
+    def test_magic(self, capsys):
+        result = usefulness("magic")
+
+        captured = capsys.readouterr()
+
+        assert result is None
+        assert captured.out == "You're not at Hogwarts\n"
+
+    def test_unknown_course(self, capsys):
+        result = usefulness("history")
+
+        captured = capsys.readouterr()
+
+        assert result is None
+        assert captured.out == "What is this COURSE?\n"
