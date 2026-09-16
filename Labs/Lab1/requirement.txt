@@ -9,7 +9,6 @@ dask
 multiprocess
 matplotlib
 seaborn
-nb_conda
 urllib3
 regex
 beautifulsoup4
@@ -20,3 +19,7 @@ black
 pylint
 isort
 pre-commit
+
+# tests & documentation
+pytest
+sphinx
