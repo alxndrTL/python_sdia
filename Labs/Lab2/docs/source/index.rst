@@ -6,12 +6,15 @@
 Lab2 documentation
 ==================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+Documentation pour les fonctions utilisées au sein du lab2:
+   .. automodule:: lab2_fns
+      :members:
+
+References
+==========
+
+.. bibliography::
