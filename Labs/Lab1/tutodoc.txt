@@ -1,0 +1,7 @@
+sphinx-quickstart docs
+
+Then fill tge files like in Lab 1
+
+Then build documentation :
+
+sphinx-build -M html docs/source/ docs/build/
