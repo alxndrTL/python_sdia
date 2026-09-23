@@ -1,6 +1,6 @@
 import numpy as np
 
-def brownianMotion(niter: int, x: np.ndarray, step: float, rng):
+def brownianMotion(niter : int, x: np.array, step : float, rng) -> tuple[list[np.ndarray], np.ndarray]:
     """
     Simule une marche aléatoire brownienne dans la boule unité.
 
@@ -43,34 +43,36 @@ def brownianMotion(niter: int, x: np.ndarray, step: float, rng):
     >>> walk, inter = brownianMotion(1000, np.array([0.0, 0.0]), 0.01, rng)
     >>> np.linalg.norm(inter)  # doit être proche de 1
     """
-    if np.linalg.norm(x) > 1 or step <= 0:
+
+    walk = [x.copy()] #on initialise la marche avec le point de départ
+    n = 0
+    if np.linalg.norm(x) > 1 or step <= 0 :
         raise ValueError("x must be inside the unit ball and step must be greater than 0")
 
-    walk = [x.copy()]
-    n = 0
-
     while np.linalg.norm(x) <= 1 and n <= niter:
-        x = x + np.sqrt(step) * rng.normal(loc=0, scale=1, size=x.shape)
-        walk.append(x.copy())
+        x = x + np.sqrt(step)*rng.normal(loc = 0, scale = 1, size = x.shape)
+        walk.append(x)
         n += 1
 
-    A = walk[-2]
-    B = walk[-1]
-    d = A - B
+    A = walk[-1]
+    B = walk[-2]
+    d = A-B
 
-    # Coefficients du polynôme tels que développés ci-dessus
-    a_coef = np.dot(d, d)
-    b_coef = 2 * np.dot(B, d)
-    c_coef = np.dot(B, B) - 1
+    #on calcule les coefficients du polynôme tels que développés ci-dessus :
+    a_coef = np.dot(d,d)
+    b_coef = 2 * np.dot(B,d)
+    c_coef = np.dot(B,B) -1
 
     roots = np.roots([a_coef, b_coef, c_coef])
-    real_roots = roots[np.isreal(roots)].real        # racines réelles
-    valid = real_roots[(real_roots >= 0) & (real_roots <= 1)]  # dans [0, 1]
+    real_roots = roots[np.isreal(roots)].real #on prend les racines réelles
+    valid = real_roots[(real_roots >=0 ) & (real_roots <= 1)] #on prend les racines qui sont entre 0 et 1.
 
     if len(valid) == 0:
-        raise ValueError("Aucune racine valide trouvée pour l'interpolation des deux derniers points")
+        raise ValueError("Aucune Racine valide trouvée pour l'interpolation des deux derniers points")
 
     alpha = valid[0]
-    inter = (1 - alpha) * A + alpha * B
+    inter = (1-alpha)*B + alpha*A
+
+    walk = np.array(walk)
 
     return walk, inter
