@@ -22,3 +22,4 @@ pre-commit
 conda-lock
 pytest
 sphinx
+opencv-python
