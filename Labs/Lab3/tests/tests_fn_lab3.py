@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from src.lab3_fns import brownian_motion
+from src.lab3_fns import brownian_motion, ideal_lowpass_filter
 
 @pytest.fixture
 def rng():
@@ -94,3 +94,57 @@ class TestIntersectionOnSphere:
         alpha = np.dot(inter - B, diff) / np.dot(diff, diff)
         assert 0.0 <= alpha <= 1.0
         assert np.allclose(inter, B + alpha * diff)
+
+
+class TestIdealLowpassFilter:
+
+    def test_output_shapes_and_types(self):
+        X = make_rng().standard_normal((32, 40))
+        X_filt, F_filt = ideal_lowpass_filter(X, (5, 5))
+        assert X_filt.shape == X.shape
+        assert F_filt.shape == X.shape
+        assert np.isrealobj(X_filt)
+        assert np.iscomplexobj(F_filt)
+
+    def test_input_not_mutated(self):
+        X = make_rng().standard_normal((32, 32))
+        X_copy = X.copy()
+        ideal_lowpass_filter(X, (5, 5))
+        assert np.array_equal(X, X_copy)
+
+    def test_zero_cutoff_gives_mean(self):
+        # fc = (0, 0) : on ne garde que la fréquence nulle => image constante égale à la moyenne
+        X = make_rng().standard_normal((32, 32))
+        X_filt, _ = ideal_lowpass_filter(X, (0, 0))
+        assert np.allclose(X_filt, X.mean())
+
+    @pytest.mark.parametrize("shape", [(32, 32), (32, 40)])
+    def test_full_cutoff_gives_identity(self, shape):
+        # on garde toutes les fréquences => l'image n'est pas modifiée
+        X = make_rng().standard_normal(shape)
+        X_filt, _ = ideal_lowpass_filter(X, (shape[0] // 2, shape[1] // 2))
+        assert np.allclose(X_filt, X)
+
+    def test_constant_image_unchanged(self):
+        # une image constante n'a que la fréquence nulle
+        X = 3.0 * np.ones((32, 32))
+        X_filt, _ = ideal_lowpass_filter(X, (2, 2))
+        assert np.allclose(X_filt, X)
+
+    def test_spectrum_zero_outside_mask(self):
+        M, N = 32, 32
+        fc_y, fc_x = 3, 5
+        X = make_rng().standard_normal((M, N))
+        _, F_filt = ideal_lowpass_filter(X, (fc_y, fc_x))
+        mask = np.zeros((M, N), dtype=bool)
+        mask[M // 2 - fc_y : M // 2 + fc_y + 1, N // 2 - fc_x : N // 2 + fc_x + 1] = True
+        assert np.all(F_filt[~mask] == 0)
+
+    def test_low_frequency_kept_high_frequency_removed(self):
+        # cosinus horizontal de fréquence k : conservé si fc_x >= k, supprimé sinon
+        M, N = 32, 32
+        n = np.arange(N)
+        low = np.tile(np.cos(2 * np.pi * 2 * n / N), (M, 1))    # k = 2
+        high = np.tile(np.cos(2 * np.pi * 10 * n / N), (M, 1))  # k = 10
+        X_filt, _ = ideal_lowpass_filter(low + high, (0, 5))
+        assert np.allclose(X_filt, low)

@@ -44,7 +44,8 @@ htmlcov/
 # ============================================================
 
 # Sphinx generated documentation
-docs/build/
+**/docs/build/
+**/docs/_build/
 
 # ============================================================
 # IDE / Editors

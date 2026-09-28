@@ -27,9 +27,10 @@ def brownian_motion(niter : int, x: np.array, step : float, rng) -> tuple[list[n
     walk : list of np.ndarray
         Liste des positions successives de la marche, incluant le point de
         départ.
-    inter : np.ndarray
+    inter : np.ndarray or None
         Point d'intersection interpolé entre le dernier point intérieur et le
-        premier point extérieur à la sphère unité.
+        premier point extérieur à la sphère unité. None si la marche n'est pas
+        sortie de la boule en niter pas.
 
     Raises
     ------
@@ -54,6 +55,10 @@ def brownian_motion(niter : int, x: np.array, step : float, rng) -> tuple[list[n
         walk.append(x)
         n += 1
 
+    # si la marche n'est pas sortie de la boule en niter pas, il n'y a pas d'intersection
+    if np.linalg.norm(x) <= 1:
+        return np.array(walk), None
+
     A = walk[-1]
     B = walk[-2]
     d = A-B
@@ -76,3 +81,44 @@ def brownian_motion(niter : int, x: np.array, step : float, rng) -> tuple[list[n
     walk = np.array(walk)
 
     return walk, inter
+
+
+def ideal_lowpass_filter(X, fc):
+    """Filtre passe-bas idéal 2D.
+
+    Paramètres
+    ----------
+    X : np.ndarray, shape (M1, N1)
+        Image en niveaux de gris.
+    fc : tuple (fc_y, fc_x)
+        Nombre de fréquences conservées de part et d'autre de la fréquence
+        nulle, selon chaque direction.
+
+    Retours
+    -------
+    X_filt : np.ndarray, shape (M1, N1)
+        Image filtrée (réelle).
+    F_filt : np.ndarray, shape (M1, N1), complexe
+        Spectre filtré centré (utile pour l'affichage).
+    """
+
+    M1, N1 = X.shape
+    fc_y, fc_x = fc
+
+    # passage dans le domaine fréquentiel
+    # cf question précédente: fréquence nulle en (M1//2, N1//2)
+    F = np.fft.fftshift(np.fft.fft2(X))
+
+    # masque rectangulaire autour du centre
+    cy, cx = M1//2, N1//2
+    mask = np.zeros((M1, N1), dtype=float) # matrice remplie de 0
+    mask[cy - fc_y : cy + fc_y + 1, cx - fc_x : cx + fc_x + 1] = 1.0 # on met 1 dans la zone du filtre
+
+    # application du masque
+    # dans le domaine spatial, on doit faire une convolution
+    # mais dans le domaine fréquentiel, on fait juste un produit
+    F_filt = F * mask
+
+    # retour dans le domaine spatial
+    X_filt = np.fft.ifft2(np.fft.ifftshift(F_filt))
+    return X_filt.real, F_filt
