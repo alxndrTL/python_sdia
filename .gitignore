@@ -78,4 +78,7 @@ Desktop.ini
 .env.*
 !.env.example
 
-Labs_DL/
+Labs_DL/test
+Labs_Dl/train
+Labs_DL/valid
+*.zip
